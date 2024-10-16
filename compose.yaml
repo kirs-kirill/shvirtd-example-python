@@ -1,0 +1,26 @@
+version: "3"
+name: task3
+include:
+  - proxy.yaml
+services:
+
+  web:
+    context: .
+    dockerfile: Dockerfile.python
+    networks:
+      - backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+
+networks:
+  backend:
+    driver: bridge
+    ipam:
+     config:
+      - subnet: 172.20.0.0/24
+        aux_addresses:
+        web: 172.20.0.5
