@@ -1,26 +1,40 @@
-version: "3"
+#version: "3"
+
 name: task3
 include:
   - proxy.yaml
+  
 services:
 
-  web:
-    context: .
-    dockerfile: Dockerfile.python
+  http_back:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+      args:
+          - MYSQL_USER=$MYSQL_USER
+          - MYSQL_PASSWORD=$MYSQL_PASSWORD
+          - MYSQL_DATABASE=$MYSQL_DATABASE
     networks:
-      - backend
+      backend:
+        ipv4_address: 172.20.0.5
     ports:
       - "5000:5000"
+    environment:
+      - DB_HOST=db
     env_file:
-      - ./.env
+      - path: ./.env
     depends_on:
       - db
+    restart: on-failure
 
-networks:
-  backend:
-    driver: bridge
-    ipam:
-     config:
-      - subnet: 172.20.0.0/24
-        aux_addresses:
-        web: 172.20.0.5
+  db:
+    image: mysql:8
+    networks:
+      backend:
+        ipv4_address: 172.20.0.10
+    restart: always
+    environment:
+      - DB_HOST=db
+    env_file:
+      - path: ./.env
+    
